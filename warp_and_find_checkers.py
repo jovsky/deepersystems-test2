@@ -1,13 +1,17 @@
 import cv2
 import json
 import numpy as np
+import argparse
+import os
 
 file_names = ["3913", "20190908_134913", "20190908_135102", "p40_20190821_122507", "vertical4"]
 
-HEIGHT = 600
-
+HEIGHT = 1000
 
 def getPipsRegions(H, W, pipH, pipW, barW, sIH, sIW):
+
+  pipH = int(pipH*1.1)
+  pipW = int(pipW*1.01)
 
   topPipsRegions = []
   bottomPipsRegions = []
@@ -30,10 +34,20 @@ def getPipsRegions(H, W, pipH, pipW, barW, sIH, sIW):
   return topPipsRegions, bottomPipsRegions
 
 if __name__ == "__main__":
+
+  parser = argparse.ArgumentParser()
+  parser.add_argument('input_path', type=str)
+  parser.add_argument('output_path', type=str)
+
+  args = parser.parse_args()
+  input_path = args.input_path
+  output_path = args.output_path
+  if not os.path.exists(output_path):
+    os.makedirs(output_path)
     
   for fname in file_names:
 
-    with open("bgsamples/"+fname+".jpg.info.json") as fjson:
+    with open(input_path+"/"+fname+".jpg.info.json") as fjson:
 
       data = json.load(fjson)
       img = cv2.imread("bgsamples/"+fname+".jpg")
@@ -76,14 +90,14 @@ if __name__ == "__main__":
       boardContour = np.array([pts2], dtype=np.int32)
 
       circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, checkerWidth*0.8, 
-            param1=30,
+            param1=100,
             param2=20,
             minRadius = int(checkerRadius*0.9), 
             maxRadius = int(checkerRadius*1.1))
 
       circles = np.uint16(np.around(circles))
                                                 # (H, W, pipH, pipW, barW, sIH, sIW)
-      topRegions, bottomRegions = getPipsRegions(HEIGHT, width, pipLength, int(checkerWidth*1.05), barWidth, sH, sW)
+      topRegions, bottomRegions = getPipsRegions(HEIGHT, width, pipLength, checkerWidth, barWidth, sH, sW)
 
       counter = {
         "top": [0]*12,
@@ -102,10 +116,6 @@ if __name__ == "__main__":
             counter["top"][i]+=1
             found = True
 
-            #cv2.rectangle(img_p, reg[0], reg[1], color=(255,0,0), thickness=2)
-            cv2.circle(img_p,(xC, yC),rC,(0,255,0),2)
-            cv2.circle(img_p,(xC, yC),2,(0,0,255),3)
-
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
@@ -120,18 +130,31 @@ if __name__ == "__main__":
             if ( x1R < xC <= x2R and y1R < yC <= y2R):
               counter["bottom"][i]+=1
 
-              #cv2.rectangle(img_p, reg[0], reg[1], color=(255,0,0), thickness=2)
-              cv2.circle(img_p,(xC, yC),rC,(0,255,0),2)
-              cv2.circle(img_p,(xC, yC),2,(0,0,255),3)
-
               break
 
-      print ("TOP:", counter["top"])
-      print ("BOT:", counter["bottom"])
+      #print ("TOP:", counter["top"])
+      #print ("BOT:", counter["bottom"], '\n')
 
-      cv2.imshow("Over the Clouds", img_p)
-      cv2.waitKey(0)
-      cv2.destroyAllWindows()
+      #for reg in (topRegions+bottomRegions):
+      #  cv2.rectangle(img_p, reg[0], reg[1], color=(255,0,0), thickness=2)
+
+      for xC, yC, rC in circles[0,:]:
+        cv2.circle(img_p,(xC, yC),rC,(0,255,0),2)
+        cv2.circle(img_p,(xC, yC),2,(0,0,255),3)
+
+      cv2.drawContours(img_p, boardContour, -1, (0,0,255), 2)
+
+      file_path = output_path+"/"+fname+".visual_feedback.jpg"
+      cv2.imwrite(file_path, img_p)
+
+      file_path = output_path+"/"+fname+".checkers.json"
+      with open(file_path, 'w') as jf:
+        json.dump(counter, jf, indent=4)
+      jf.close()
+
+      #cv2.imshow("Over the Clouds", img_p)
+      #cv2.waitKey(0)
+      #cv2.destroyAllWindows()
 
       # break
 
