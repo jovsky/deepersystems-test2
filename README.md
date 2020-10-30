@@ -5,6 +5,10 @@ How to use it:
 ```
 python warp_and_find_checkers <input_path> <output_path>
 ```
+For each image in *input_path* folder:
+* There must also be a *.info.json* file 
+* Image type must me **.jpg** 
+
 
 ## QUESTIONS:
 

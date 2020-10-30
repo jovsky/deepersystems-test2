@@ -3,8 +3,7 @@ import json
 import numpy as np
 import argparse
 import os
-
-file_names = ["3913", "20190908_134913", "20190908_135102", "p40_20190821_122507", "vertical4"]
+from os.path import isfile, join
 
 HEIGHT = 1000
 
@@ -44,8 +43,14 @@ if __name__ == "__main__":
   output_path = args.output_path
   if not os.path.exists(output_path):
     os.makedirs(output_path)
+
+  onlyfiles = [f for f in os.listdir(input_path) if isfile(join(input_path, f))]
+  filenames = []
+  for filename in onlyfiles:
+    if filename[-4:] == ".jpg":
+      filenames.append(filename[:-4])
     
-  for fname in file_names:
+  for fname in filenames:
 
     with open(input_path+"/"+fname+".jpg.info.json") as fjson:
 
