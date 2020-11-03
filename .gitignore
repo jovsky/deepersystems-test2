@@ -1,8 +1,0 @@
-# Ignore everything
-*
-
-# But not these files...
-!warp_and_find_checkers.py
-!README.md
-!bgsamples/
-!/bgsamples/
