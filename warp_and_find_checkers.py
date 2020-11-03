@@ -55,7 +55,7 @@ if __name__ == "__main__":
     with open(input_path+"/"+fname+".jpg.info.json") as fjson:
 
       data = json.load(fjson)
-      img = cv2.imread("bgsamples/"+fname+".jpg")
+      img = cv2.imread(input_path+"/"+fname+".jpg")
 
       board_corners = data["canonical_board"]["tl_tr_br_bl"]
       (tl, tr, br, bl) = board_corners
@@ -152,7 +152,7 @@ if __name__ == "__main__":
       file_path = output_path+"/"+fname+".visual_feedback.jpg"
       cv2.imwrite(file_path, img_p)
 
-      file_path = output_path+"/"+fname+".checkers.json"
+      file_path = output_path+"/"+fname+".jpg.checkers.json"
       with open(file_path, 'w') as jf:
         json.dump(counter, jf, indent=4)
       jf.close()
